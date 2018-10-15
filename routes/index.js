@@ -6,6 +6,17 @@ var blogFacade = require('../facades/blogFacade');
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
+//index
+
+router.post('/', async function (req, res, next) {
+  var body = req.body;
+  var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
+  res.send("Succes!")
+})
+
+router.get('/', function (req, res) {
+  res.render('index', { title: 'Hey', message: 'Hello there!' })
+})
 
 /* USER */
 
@@ -40,6 +51,7 @@ router.get('/users/search', async function(req, res, next) {
   }
 });
 
+
 /* LOCATIONBLOGS */
 
 /* GET all LocationBlogs. */
@@ -54,4 +66,16 @@ router.get('/locationblogs/search/:locationinfo', async function(req, res, next)
   res.json(result);
 });
 
+//Add pos
+
+router.post('/addblog', async function (req, res, next) {
+  var body = req.body;
+  var user = await userFacade.findById('5bc23b8d4fe27e113c5f6efa')
+  var result = await blogFacade.addLocationBlog(body.info, body.longtitude, body.latitude, user)
+  res.send("it's magic")
+})
+
+router.get('/addblog', function (req, res) {
+  res.render('blog', { title: 'blog', message: 'add blog' })
+})
 module.exports = router;
