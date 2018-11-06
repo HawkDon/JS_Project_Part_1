@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var userFacade = require('../facades/userFacade');
 var blogFacade = require('../facades/blogFacade');
+//var posFacade = require('../facades/posFacade');
 
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
@@ -15,32 +16,34 @@ router.post('/', async function (req, res, next) {
 })
 
 router.get('/', function (req, res) {
-  res.render('index', { title: 'Hey', message: 'Hello there!' })
+  res.render('index', {
+    title: 'Hey',
+    message: 'Hello there!'
+  })
 })
 
 /* USER */
 
 /* GET all users. */
-router.get('/users', async function(req, res, next) {
+router.get('/users', async function (req, res, next) {
   var result = await userFacade.getAllUsers();
   res.json(result);
 });
 
 /* GET specific user by username with params */
-router.get('/users/search/:userName', async function(req, res, next) {
+router.get('/users/search/:userName', async function (req, res, next) {
   var result = await userFacade.findByUsername(req.params.userName);
   res.json(result);
 });
 
 /* GET specific user by id or username with query */
-router.get('/users/search', async function(req, res, next) {
+router.get('/users/search', async function (req, res, next) {
   try {
     var result;
-    if(req.query.uId) {
+    if (req.query.uId) {
       result = await userFacade.findById(req.query.uId);
       res.json(result);
-    }
-    else if(req.query.uName) {
+    } else if (req.query.uName) {
       result = await userFacade.findByUsername(req.query.uName);
       res.json(result);
     } else {
@@ -55,13 +58,13 @@ router.get('/users/search', async function(req, res, next) {
 /* LOCATIONBLOGS */
 
 /* GET all LocationBlogs. */
-router.get('/locationblogs', async function(req, res, next) {
+router.get('/locationblogs', async function (req, res, next) {
   var result = await blogFacade.getAllLocationBlogs();
   res.json(result);
 });
 
 /* GET specific user by username with params */
-router.get('/locationblogs/search/:locationinfo', async function(req, res, next) {
+router.get('/locationblogs/search/:locationinfo', async function (req, res, next) {
   var result = await blogFacade.findLocationBlog(req.params.locationinfo)
   res.json(result);
 });
@@ -75,7 +78,26 @@ router.post('/addblog', async function (req, res, next) {
   res.send("it's magic")
 })
 
+router.post('/api/login', async function (req, res, next) {
+  const user = req.body;
+  const userInDB = await userFacade.findByUsername(user.username);
+  try {
+    if (userInDB === null) {
+      throw new Error('Woops!');
+    } else if (user.password ==  userInDB.password) { 
+      var blogPos = await blogFacade.findAndUpdateUserPos(userInDB, user.longitude, user.latitude)
+      res.json(blogPos)
+      // Continue if user exists q:^)-}-<|8
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+})
+
 router.get('/addblog', function (req, res) {
-  res.render('blog', { title: 'blog', message: 'add blog' })
+  res.render('blog', {
+    title: 'blog',
+    message: 'add blog'
+  })
 })
 module.exports = router;

@@ -8,6 +8,10 @@ function addLocationBlog(info, longitude, latitude, user) {
     return new LocationBlog({info, pos: { longitude, latitude }, author: user}).save();
 }
 
+async function findAndUpdateUserPos(user, longitude, latitude){
+    return await LocationBlog.findOneAndUpdate({ author: user._id }, { $set: { pos: { longitude, latitude }}}).exec();
+}
+
 function findLocationBlog(info) {
     return LocationBlog.findOne({info: info}).exec();
 }
@@ -21,5 +25,6 @@ module.exports = {
     addLocationBlog: addLocationBlog,
     likeLocationBlogUpdate: likeLocationBlogUpdate,
     findLocationBlog: findLocationBlog,
-    getAllLocationBlogs: getAllLocationBlogs
+    getAllLocationBlogs: getAllLocationBlogs,
+    findAndUpdateUserPos : findAndUpdateUserPos,
 }

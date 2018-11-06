@@ -9,7 +9,7 @@ function addUser(firstName, lastName, userName, password, email) {
 }
 
 function findByUsername(username) {
-  return User.findOne({userName: username}).exec();
+    return User.findOne({userName: username}).exec(); 
 }
 
 function findById(id) {
