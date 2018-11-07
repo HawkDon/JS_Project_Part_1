@@ -5,15 +5,20 @@ function getAllUsers() {
 }
 
 function addUser(firstName, lastName, userName, password, email) {
-  return new User({ firstName, lastName, userName, password, email}).save();
+  return new User({ firstName, lastName, userName, password, email }).save();
 }
 
-function findByUsername(username) {
-    return User.findOne({userName: username}).exec(); 
+function findByUsername(username, next) {
+  return User.find({ userName: username }, function (err, res) {
+    if (err) console.log(err);
+    if (!res.length) {
+      next({hasError: true});
+    }
+  });
 }
 
 function findById(id) {
-  return User.findById({ _id:id }).exec();
+  return User.findById({ _id: id }).exec();
 }
 
 module.exports = {

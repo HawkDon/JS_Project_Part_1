@@ -80,17 +80,11 @@ router.post('/addblog', async function (req, res, next) {
 
 router.post('/api/login', async function (req, res, next) {
   const user = req.body;
-  const userInDB = await userFacade.findByUsername(user.username);
-  try {
-    if (userInDB === null) {
-      throw new Error('Woops!');
-    } else if (user.password ==  userInDB.password) { 
-      var blogPos = await blogFacade.findAndUpdateUserPos(userInDB, user.longitude, user.latitude)
-      res.json(blogPos)
-      // Continue if user exists q:^)-}-<|8
-    }
-  } catch (error) {
-    console.log(error.message);
+  const userInDB = await userFacade.findByUsername(user.username, next);
+  if (user.password == userInDB.password) {
+    var blogPos = await blogFacade.findAndUpdateUserPos(userInDB, user.longitude, user.latitude)
+    res.json(blogPos)
+    // Continue if user exists q:^)-}-<|8
   }
 })
 
