@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var userFacade = require('../facades/userFacade');
 var blogFacade = require('../facades/blogFacade');
+var posFacade = require('../facades/posFacade');
 //var posFacade = require('../facades/posFacade');
 
 /* Get connection */
@@ -78,14 +79,55 @@ router.post('/addblog', async function (req, res, next) {
   res.send("it's magic")
 })
 
+router.get('/api/getlocation', async function (req, res, next) {
+  const response = req.body // longtitude and latitude.
+  //Get all positions within 1 - 5 km
+  //Hardcoded
+  const min = 0;
+  const max = 5 * 10000000;
+  const longitude = 70.324;
+  const latitude = 40.765;
+  const getPositions = await posFacade.findPositionplaces(min, max, longitude, latitude);
+
+  // Map over and reformat
+  const newArray = getPositions.map(obj => {
+    return {
+      username: obj.user.userName,
+      longitude: obj.loc.coordinates[0],
+      latitude: obj.loc.coordinates[1]
+    }
+  })
+
+  const jsonObject = {
+    friends: newArray
+  };
+
+  res.json(jsonObject);
+
+})
+
+router.post('/api/addPosition', async function (req, res, next) {
+  var body = req.body;
+  var pos = await posFacade.addPosition();
+  res.json(pos)
+})
+
 router.post('/api/login', async function (req, res, next) {
   const user = req.body;
+
+  //Get user validation
   const userInDB = await userFacade.findByUsername(user.username, next);
-  if (user.password == userInDB.password) {
-    var blogPos = await blogFacade.findAndUpdateUserPos(userInDB, user.longitude, user.latitude)
-    res.json(blogPos)
-    // Continue if user exists q:^)-}-<|8
-  }
+
+  //Convert array to object from db
+  const userObject = userInDB.reduce((prev, curr) => curr, {});
+
+  //Add location to user
+  var blogPos = await blogFacade.findAndUpdateUserPos(userObject, user.longitude, user.latitude)
+
+  /*
+  We return login validation and position of user
+  res.json(blogPos)
+  */
 })
 
 router.get('/addblog', function (req, res) {
