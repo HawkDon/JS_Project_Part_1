@@ -21,7 +21,7 @@ var UserSchema = new Schema({
 })
 
 UserSchema.pre("save",function(next){
-  this.password = "hash_me_and_add_some_salt "+this.password;
+  this.password = this.password; // Add salt
   this.lastUpdated = new Date();
   next();
 })

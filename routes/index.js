@@ -10,10 +10,14 @@ require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
 //index
 
-router.post('/', async function (req, res, next) {
+router.post('/api/register', async function (req, res, next) {
   var body = req.body;
   var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
-  res.send("Succes!")
+  if(!result) {
+    res.send(JSON.stringify({status: "User has not been registered, because the username already exists.", error: true}))
+  } else {
+    res.send(JSON.stringify({status: "User has been succesfully registered", error: false}))
+  }
 })
 
 router.get('/', function (req, res) {
