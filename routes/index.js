@@ -20,6 +20,28 @@ router.post('/api/register', async function (req, res, next) {
   }
 })
 
+router.post('/api/login', async function (req, res, next) {
+  const user = req.body.user;
+  const coords = req.body;
+  //Get user validation
+  const userInDB = await userFacade.findByUsername(user.username, next);
+  if(!userInDB.length || userInDB[0].password !== user.password) {
+    res.send(JSON.stringify({ status: "invalid username or password, please try again", error: true }))
+  } else {
+    //Convert array to object from db
+    const userObject = userInDB.reduce((prev, curr) => curr, {});
+
+    //Add location to user
+    const blogPos = await blogFacade.findAndUpdateUserPos(userObject,coords.longitude, coords.latitude)
+    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude} }))
+  }
+
+  /*
+  We return login validation and position of user
+  res.json(blogPos)
+  */
+})
+
 router.get('/', function (req, res) {
   res.render('index', {
     title: 'Hey',
@@ -114,24 +136,6 @@ router.post('/api/addPosition', async function (req, res, next) {
   var body = req.body;
   var pos = await posFacade.addPosition();
   res.json(pos)
-})
-
-router.post('/api/login', async function (req, res, next) {
-  const user = req.body;
-
-  //Get user validation
-  const userInDB = await userFacade.findByUsername(user.username, next);
-
-  //Convert array to object from db
-  const userObject = userInDB.reduce((prev, curr) => curr, {});
-
-  //Add location to user
-  var blogPos = await blogFacade.findAndUpdateUserPos(userObject, user.longitude, user.latitude)
-
-  /*
-  We return login validation and position of user
-  res.json(blogPos)
-  */
 })
 
 router.get('/addblog', function (req, res) {

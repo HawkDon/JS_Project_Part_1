@@ -9,12 +9,7 @@ function addUser(firstName, lastName, userName, password, email) {
 }
 
 function findByUsername(username, next) {
-  return User.find({ userName: username }, function (err, res) {
-    if (err) console.log(err);
-    if (!res.length) {
-      next({hasError: true});
-    }
-  });
+  return User.find({ userName: username });
 }
 
 function findById(id) {

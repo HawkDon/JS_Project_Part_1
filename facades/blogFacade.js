@@ -8,8 +8,8 @@ function addLocationBlog(info, longitude, latitude, user) {
     return new LocationBlog({info, pos: { longitude, latitude }, author: user}).save();
 }
 
-async function findAndUpdateUserPos(user, longitude, latitude){
-    return await LocationBlog.findOneAndUpdate({ author: user._id }, {pos: { longitude, latitude }}, { upsert: true , returnNewDocument: true}).exec();
+function findAndUpdateUserPos(user, longitude, latitude){
+    return LocationBlog.findOneAndUpdate({ author: user._id }, {pos: { longitude, latitude }}, { upsert: true , returnNewDocument: false });
 }
 
 function findLocationBlog(info) {
