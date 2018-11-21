@@ -27,7 +27,7 @@ router.get('/', function (req, res) {
   })
 })
 
-/* USER */
+/* USEr */
 
 /* GET all users. */
 router.get('/users', async function (req, res, next) {
