@@ -34,11 +34,16 @@ function findUserForPosition(id) {
     return User.findById(id);
 }
 
+function findPositionForUser(id) {
+    return Position.findOne({ _id: id });
+}
+
 
 module.exports = {
     findPositionplaces: findPositionplaces,
     findAndUpdatePositionOnUser: findAndUpdatePositionOnUser,
     getAllFriends: getAllFriends,
     findUserForPosition: findUserForPosition,
-    findAndUpdatePositionOnUsername: findAndUpdatePositionOnUsername
+    findAndUpdatePositionOnUsername: findAndUpdatePositionOnUsername,
+    findPositionForUser: findPositionForUser
 }

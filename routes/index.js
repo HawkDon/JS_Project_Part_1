@@ -3,6 +3,8 @@ var router = express.Router();
 var userFacade = require('../facades/userFacade');
 var blogFacade = require('../facades/blogFacade');
 var posFacade = require('../facades/posFacade');
+var gju = require('geojson-utils');
+var circleToPolygon = require('circle-to-polygon');
 //var posFacade = require('../facades/posFacade');
 
 /* Get connection */
@@ -86,6 +88,31 @@ router.get('/users/search', async function (req, res, next) {
   }
 });
 
+router.post('/api/nearbyplayers', async function (req, res, next) {
+  const username = req.body.username;
+  const userLoggedIn = await userFacade.findByUsername(username);
+  const position = await posFacade.findPositionForUser(userLoggedIn[0]._id)
+  const getPositions = await posFacade.getAllFriends();
+  const radiusIn = req.body.radius;
+
+  const coordinates = [position.loc.coordinates[0], position.loc.coordinates[1]]; //[lon, lat]
+  const radius = radiusIn * 1000;                           // in meters to km
+  const numberOfEdges = 32;                           //optional that defaults to 32
+ 
+  //Make circle around user
+  let polygon = circleToPolygon(coordinates, radius, numberOfEdges);
+
+  // Validate if Points is in polygon
+  const friendsInPolygon = [];
+  getPositions.forEach(element => {
+    if(gju.pointInPolygon({ "type":"Point","coordinates":[element.loc.coordinates[0], element.loc.coordinates[1]] },polygon)){
+      friendsInPolygon.push(element)
+    }
+  });
+
+  const removeUserFromList = await convertFriends(friendsInPolygon, username);
+  res.send(JSON.stringify(removeUserFromList));
+})
 
 /* LOCATIONBLOGS */
 
