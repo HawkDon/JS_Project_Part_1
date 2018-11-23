@@ -19,7 +19,11 @@ function findPositionplaces(min, max, longitude, latitude) {
 }
 
 function findAndUpdatePositionOnUser(userId, longitude, latitude) {
-    return Position.findOneAndUpdate({ _id: userId }, { loc: { type: "Point", coordinates: [longitude, latitude] } }, { upsert: true , returnNewDocument: false } )
+    return Position.findOneAndUpdate({ _id: userId }, { loc: { type: "Point", coordinates: [longitude, latitude] } }, { upsert: true , returnNewDocument: false } );
+}
+
+function findAndUpdatePositionOnUsername(username, longitude, latitude) {
+    return Position.findOneAndUpdate({ userName: username }, { loc: { type: "Point", coordinates: [longitude, latitude] } } );
 }
 
 function getAllFriends() {
@@ -35,5 +39,6 @@ module.exports = {
     findPositionplaces: findPositionplaces,
     findAndUpdatePositionOnUser: findAndUpdatePositionOnUser,
     getAllFriends: getAllFriends,
-    findUserForPosition: findUserForPosition
+    findUserForPosition: findUserForPosition,
+    findAndUpdatePositionOnUsername: findAndUpdatePositionOnUsername
 }

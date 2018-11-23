@@ -46,6 +46,14 @@ router.get('/', function (req, res) {
   })
 })
 
+router.post('/api/updatePos', async function (req, res, next) {
+  const body = req.body;
+  console.log(body);
+  const pos = await posFacade.findAndUpdatePositionOnUsername(body.username, body.longitude, body.latitude).catch(res => console.log(res.message));
+
+  res.send(JSON.stringify({ status: "Welcome: " + body.username, error: false, payload: { username: body.username, longitude: body.longitude, latitude: body.latitude } }))
+})
+
 /* USEr */
 
 /* GET all users. */
