@@ -18,18 +18,22 @@ function findPositionplaces(min, max, longitude, latitude) {
         .exec();
 }
 
-function addPosition() {
-    return new Position({
-        user: '5bc23b8d4fe27e113c5f6efb',
-        loc: {
-            coordinates: [50, 32]
-        }
-    }).save(function (err) {
-        if (err) console.log(err);
-    });
+function findAndUpdatePositionOnUser(userId, longitude, latitude) {
+    return Position.findOneAndUpdate({ _id: userId }, { loc: { type: "Point", coordinates: [longitude, latitude] } }, { upsert: true , returnNewDocument: false } )
 }
+
+function getAllFriends() {
+    return Position.find();
+}
+
+function findUserForPosition(id) {
+    return User.findById(id);
+}
+
 
 module.exports = {
     findPositionplaces: findPositionplaces,
-    addPosition: addPosition
+    findAndUpdatePositionOnUser: findAndUpdatePositionOnUser,
+    getAllFriends: getAllFriends,
+    findUserForPosition: findUserForPosition
 }

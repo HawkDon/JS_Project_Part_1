@@ -13,10 +13,10 @@ require('../dbSetup')(require("../settings").TEST_DB_URI);;
 router.post('/api/register', async function (req, res, next) {
   var body = req.body;
   var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
-  if(!result) {
-    res.send(JSON.stringify({status: "User has not been registered, because the username already exists.", error: true}))
+  if (!result) {
+    res.send(JSON.stringify({ status: "User has not been registered, because the username already exists.", error: true }))
   } else {
-    res.send(JSON.stringify({status: "User has been succesfully registered", error: false}))
+    res.send(JSON.stringify({ status: "User has been succesfully registered", error: false }))
   }
 })
 
@@ -25,21 +25,18 @@ router.post('/api/login', async function (req, res, next) {
   const coords = req.body;
   //Get user validation
   const userInDB = await userFacade.findByUsername(user.username, next);
-  if(!userInDB.length || userInDB[0].password !== user.password) {
+  if (!userInDB.length || userInDB[0].password !== user.password) {
     res.send(JSON.stringify({ status: "invalid username or password, please try again", error: true }))
   } else {
     //Convert array to object from db
     const userObject = userInDB.reduce((prev, curr) => curr, {});
 
-    //Add location to user
-    const blogPos = await blogFacade.findAndUpdateUserPos(userObject,coords.longitude, coords.latitude)
-    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude} }))
-  }
+    //Add position to user
+    const pos = await posFacade.findAndUpdatePositionOnUser(userInDB, coords.longitude, coords.latitude).catch(res => console.log(res.message));
 
-  /*
-  We return login validation and position of user
-  res.json(blogPos)
-  */
+    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude } }))
+  }
+  next();
 })
 
 router.get('/', function (req, res) {
@@ -105,6 +102,29 @@ router.post('/addblog', async function (req, res, next) {
   res.send("it's magic")
 })
 
+async function convertFriends(res, username) {
+  const allFriends = [];
+  for (let index = 0; index < res.length; index++) {
+    const user = await posFacade.findUserForPosition(res[index]._id);
+    if (user.userName !== username) {
+      allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
+    }
+  }
+  return allFriends;
+}
+
+router.post('/api/allFriends', async function (req, res, next) {
+  const body = req.body;
+  const username = body.username;
+  //First get positions.
+  const getPositions = await posFacade.getAllFriends();
+
+  const friends = await convertFriends(getPositions, username);
+
+  res.send(JSON.stringify(friends));
+  next();
+})
+
 router.get('/api/getlocation', async function (req, res, next) {
   const response = req.body // longtitude and latitude.
   //Get all positions within 1 - 5 km
@@ -128,6 +148,7 @@ router.get('/api/getlocation', async function (req, res, next) {
     friends: newArray
   };
 
+  console.log(jsonObject);
   res.json(jsonObject);
 
 })
