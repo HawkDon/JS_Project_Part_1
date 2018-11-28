@@ -17,7 +17,7 @@ require('../dbSetup')(require("../settings").TEST_DB_URI);;
 import { registerEndPoint } from './user_routes';
 
 // Register
-router.post('/api/register', registerEndPoint(req, res, next))
+router.post('/api/register', registerEndPoint)
 
 // Login
 router.post('/api/login', async function (req, res, next) {
