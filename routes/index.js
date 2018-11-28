@@ -7,38 +7,15 @@ var gju = require('geojson-utils');
 var circleToPolygon = require('circle-to-polygon');
 //var posFacade = require('../facades/posFacade');
 
+// Helper functions
+import convertFriends from '../helper_functions/convertFriends';
+
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
-//index
+//Server-side rendering
 
-
-/* USER */
-import { registerEndPoint } from './user_routes';
-
-// Register
-router.post('/api/register', registerEndPoint)
-
-// Login
-router.post('/api/login', async function (req, res, next) {
-  const user = req.body.user;
-  const coords = req.body;
-  //Get user validation
-  const userInDB = await userFacade.findByUsername(user.username, next);
-  if (!userInDB.length || userInDB[0].password !== user.password) {
-    res.send(JSON.stringify({ status: "invalid username or password, please try again", error: true }))
-  } else {
-    //Convert array to object from db
-    const userObject = userInDB.reduce((prev, curr) => curr, {});
-
-    //Add position to user
-    const pos = await posFacade.findAndUpdatePositionOnUser(userInDB, coords.longitude, coords.latitude).catch(res => console.log(res.message));
-
-    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude } }))
-  }
-  next();
-})
-
+//FrontPage
 router.get('/', function (req, res) {
   res.render('index', {
     title: 'Hey',
@@ -46,15 +23,7 @@ router.get('/', function (req, res) {
   })
 })
 
-router.post('/api/updatePos', async function (req, res, next) {
-  const body = req.body;
-  console.log(body);
-  const pos = await posFacade.findAndUpdatePositionOnUsername(body.username, body.longitude, body.latitude).catch(res => console.log(res.message));
-
-  res.send(JSON.stringify({ status: "Welcome: " + body.username, error: false, payload: { username: body.username, longitude: body.longitude, latitude: body.latitude } }))
-})
-
-/* USER */
+// Server endpoints Part 1
 
 /* GET all users. */
 router.get('/users', async function (req, res, next) {
@@ -68,7 +37,7 @@ router.get('/users/search/:userName', async function (req, res, next) {
   res.json(result);
 });
 
-/* GET specific user by id or username with query */
+/* GET specific user by id or username with query else throw an error*/
 router.get('/users/search', async function (req, res, next) {
   try {
     var result;
@@ -86,6 +55,54 @@ router.get('/users/search', async function (req, res, next) {
   }
 });
 
+/* USER */
+
+// Native endpoints
+// Register
+router.post('/api/register', async function (req, res, next) {
+  var body = req.body;
+  var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
+  if (!result) {
+    res.send(JSON.stringify({ status: "User has not been registered, because the username already exists.", error: true }))
+  } else {
+    res.send(JSON.stringify({ status: "User has been succesfully registered", error: false }))
+  }
+  next();
+})
+
+// Login and update pos
+router.post('/api/login', async function (req, res, next) {
+  const user = req.body.user;
+  const coords = req.body;
+  //Get user validation
+  const userInDB = await userFacade.findByUsername(user.username, next);
+  if (!userInDB.length || userInDB[0].password !== user.password) {
+    res.send(JSON.stringify({ status: "invalid username or password, please try again", error: true }))
+  } else {
+
+    //Convert array to object from db
+    const userObject = userInDB.reduce((prev, curr) => curr, {});
+
+    //Add position to user
+    const pos = await posFacade.findAndUpdatePositionOnUser(userInDB, coords.longitude, coords.latitude).catch(res => console.log(res.message));
+
+    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude } }))
+  }
+  next();
+})
+
+/* POSITIONS */
+
+//UserPositionUpdates
+router.post('/api/updatePos', async function (req, res, next) {
+  const body = req.body;
+
+  const pos = await posFacade.findAndUpdatePositionOnUsername(body.username, body.longitude, body.latitude).catch(res => console.log(res.message));
+
+  res.send(JSON.stringify({ status: "Welcome: " + body.username, error: false, payload: { username: body.username, longitude: body.longitude, latitude: body.latitude } }))
+})
+
+//Get nearbyfriends and positions
 router.post('/api/nearbyplayers', async function (req, res, next) {
   const username = req.body.username;
   const userLoggedIn = await userFacade.findByUsername(username);
@@ -126,25 +143,12 @@ router.get('/locationblogs/search/:locationinfo', async function (req, res, next
   res.json(result);
 });
 
-//Add pos
-
 router.post('/addblog', async function (req, res, next) {
   var body = req.body;
   var user = await userFacade.findById('5bc23b8d4fe27e113c5f6efa')
   var result = await blogFacade.addLocationBlog(body.info, body.longtitude, body.latitude, user)
   res.send("it's magic")
 })
-
-async function convertFriends(res, username) {
-  const allFriends = [];
-  for (let index = 0; index < res.length; index++) {
-    const user = await posFacade.findUserForPosition(res[index]._id);
-    if (user.userName !== username) {
-      allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
-    }
-  }
-  return allFriends;
-}
 
 router.post('/api/allFriends', async function (req, res, next) {
   const body = req.body;
