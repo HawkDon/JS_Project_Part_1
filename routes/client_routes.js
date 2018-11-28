@@ -11,6 +11,7 @@ var circleToPolygon = require('circle-to-polygon');
 async function removeUserFromFriendList(res, username) {
   const allFriends = [];
   for (let index = 0; index < res.length; index++) {
+    console.log(res);
     const user = await posFacade.findUserForPosition(res[index]._id);
     if (user.userName !== username) {
       allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
@@ -90,11 +91,10 @@ async function getNearbyFriends(req, res, next) {
 async function getAllFriends(req, res, next) {
   const body = req.body;
   const username = body.username;
+
   //First get positions.
   const getPositions = await posFacade.getAllFriends();
-
   const friends = await removeUserFromFriendList(getPositions, username)
-
   res.send(JSON.stringify(friends));
   next();
 }
