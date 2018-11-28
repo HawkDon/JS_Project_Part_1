@@ -55,9 +55,10 @@ router.get('/users/search', async function (req, res, next) {
   }
 });
 
+// Native endpoints
+
 /* USER */
 
-// Native endpoints
 // Register
 router.post('/api/register', async function (req, res, next) {
   var body = req.body;
