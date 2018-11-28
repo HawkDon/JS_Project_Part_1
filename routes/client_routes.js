@@ -98,6 +98,7 @@ async function getAllFriends(req, res, next) {
   res.send(JSON.stringify(friends));
   next();
 }
+
 module.exports = {
   registerEndPoint: registerEndPoint,
   loginAndUpdateUserPos: loginAndUpdateUserPos,
