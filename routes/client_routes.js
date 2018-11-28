@@ -1,6 +1,9 @@
 var userFacade = require('../facades/userFacade');
 var posFacade = require('../facades/posFacade');
 
+// Helper functions
+var helpers = require('../helper_functions/convertFriends');
+
 async function registerEndPoint(req, res, next) {
     var body = req.body;
     var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
