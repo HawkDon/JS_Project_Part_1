@@ -6,7 +6,21 @@ var gju = require('geojson-utils');
 var circleToPolygon = require('circle-to-polygon');
 
 // Helper functions
-var helpers = require('../helper_functions/convertFriends');
+/* ************************************** */
+
+async function removeUserFromFriendList(res, username) {
+  const allFriends = [];
+  for (let index = 0; index < res.length; index++) {
+    const user = await posFacade.findUserForPosition(res[index]._id);
+    if (user.userName !== username) {
+      allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
+    }
+  }
+  return allFriends;
+}
+
+/* ************************************** */
+
 
 async function registerEndPoint(req, res, next) {
     var body = req.body;
@@ -68,7 +82,7 @@ async function getNearbyFriends(req, res, next) {
     }
   });
 
-  const removeUserFromList = await helpers.removeUserFromFriendList(friendsInPolygon, username);
+  const removeUserFromList = await removeUserFromFriendList(friendsInPolygon, username);
   res.send(JSON.stringify(removeUserFromList));
 }
 
@@ -79,7 +93,7 @@ async function getAllFriends(req, res, next) {
   //First get positions.
   const getPositions = await posFacade.getAllFriends();
 
-  const friends = await helpers.removeUserFromFriendList(getPositions, username)
+  const friends = await removeUserFromFriendList(getPositions, username)
 
   res.send(JSON.stringify(friends));
   next();
