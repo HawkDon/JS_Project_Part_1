@@ -13,7 +13,7 @@ var helpers = require('../helper_functions/convertFriends');
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
 //Get Route callbacks
-var routes = require('./routes');
+var client_routes = require('./client_routes');
 
 //Server-side rendering
 
@@ -89,78 +89,20 @@ router.post('/addblog', async function (req, res, next) {
 // Native endpoints
 
 // Register
-router.post('/api/register', routes.registerEndPoint)
+router.post('/api/register', client_routes.registerEndPoint)
 
 // Login and update pos
-router.post('/api/login', async function (req, res, next) {
-  const user = req.body.user;
-  const coords = req.body;
-  //Get user validation
-  const userInDB = await userFacade.findByUsername(user.username, next);
-  if (!userInDB.length || userInDB[0].password !== user.password) {
-    res.send(JSON.stringify({ status: "invalid username or password, please try again", error: true }))
-  } else {
-
-    //Convert array to object from db
-    const userObject = userInDB.reduce((prev, curr) => curr, {});
-
-    //Add position to user
-    const pos = await posFacade.findAndUpdatePositionOnUser(userInDB, coords.longitude, coords.latitude).catch(res => console.log(res.message));
-
-    res.send(JSON.stringify({ status: "Welcome: " + user.username, error: false, payload: { username: user.username, longitude: coords.longitude, latitude: coords.latitude } }))
-  }
-  next();
-})
+router.post('/api/login', client_routes.loginAndUpdateUserPos)
 
 /* POSITIONS */
 
 //UserPositionUpdates
-router.post('/api/updatePos', async function (req, res, next) {
-  const body = req.body;
-
-  const pos = await posFacade.findAndUpdatePositionOnUsername(body.username, body.longitude, body.latitude).catch(res => console.log(res.message));
-
-  res.send(JSON.stringify({ status: "Welcome: " + body.username, error: false, payload: { username: body.username, longitude: body.longitude, latitude: body.latitude } }))
-})
+router.post('/api/updatePos', client_routes.updateUserPos)
 
 //Get nearbyfriends and positions
-router.post('/api/nearbyplayers', async function (req, res, next) {
-  const username = req.body.username;
-  const userLoggedIn = await userFacade.findByUsername(username);
-  const position = await posFacade.findPositionForUser(userLoggedIn[0]._id)
-  const getPositions = await posFacade.getAllFriends();
-  const radiusIn = req.body.radius;
-
-  const coordinates = [position.loc.coordinates[0], position.loc.coordinates[1]]; //[lon, lat]
-  const radius = radiusIn * 1000;                           // in meters to km
-  const numberOfEdges = 32;                           //optional that defaults to 32
- 
-  //Make circle around user
-  let polygon = circleToPolygon(coordinates, radius, numberOfEdges);
-
-  // Validate if Points is in polygon
-  const friendsInPolygon = [];
-  getPositions.forEach(element => {
-    if(gju.pointInPolygon({ "type":"Point","coordinates":[element.loc.coordinates[0], element.loc.coordinates[1]] },polygon)){
-      friendsInPolygon.push(element)
-    }
-  });
-
-  const removeUserFromList = await helpers.removeUserFromFriendList(friendsInPolygon, username);
-  res.send(JSON.stringify(removeUserFromList));
-})
+router.post('/api/nearbyplayers', client_routes.getNearbyFriends)
 
 //Get all friends upon login
-router.post('/api/allFriends', async function (req, res, next) {
-  const body = req.body;
-  const username = body.username;
-  //First get positions.
-  const getPositions = await posFacade.getAllFriends();
-
-  const friends = await helpers.removeUserFromFriendList(getPositions, username)
-
-  res.send(JSON.stringify(friends));
-  next();
-})
+router.post('/api/allFriends', client_routes.getAllFriends)
 
 module.exports = router;
