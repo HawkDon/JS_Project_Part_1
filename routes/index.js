@@ -5,13 +5,20 @@ var blogFacade = require('../facades/blogFacade');
 var posFacade = require('../facades/posFacade');
 var gju = require('geojson-utils');
 var circleToPolygon = require('circle-to-polygon');
-//var posFacade = require('../facades/posFacade');
-
-// Helper functions
-import convertFriends from '../helper_functions/convertFriends';
 
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
+
+async function convertFriends(res, username) {
+  const allFriends = [];
+  for (let index = 0; index < res.length; index++) {
+    const user = await posFacade.findUserForPosition(res[index]._id);
+    if (user.userName !== username) {
+      allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
+    }
+  }
+  return allFriends;
+}
 
 //Server-side rendering
 
@@ -23,7 +30,21 @@ router.get('/', function (req, res) {
   })
 })
 
-// Server endpoints Part 1
+//Add Blog
+router.get('/addblog', function (req, res) {
+  res.render('blog', {
+    title: 'blog',
+    message: 'add blog'
+  })
+})
+
+router.post('/api/addPosition', async function (req, res, next) {
+  var body = req.body;
+  var pos = await posFacade.addPosition();
+  res.json(pos)
+})
+
+// Server endpoints
 
 /* GET all users. */
 router.get('/users', async function (req, res, next) {
@@ -54,6 +75,27 @@ router.get('/users/search', async function (req, res, next) {
     next(error)
   }
 });
+
+/* LOCATIONBLOGS */
+
+/* GET all LocationBlogs. */
+router.get('/locationblogs', async function (req, res, next) {
+  var result = await blogFacade.getAllLocationBlogs();
+  res.json(result);
+});
+
+/* GET specific user by username with params */
+router.get('/locationblogs/search/:locationinfo', async function (req, res, next) {
+  var result = await blogFacade.findLocationBlog(req.params.locationinfo)
+  res.json(result);
+});
+
+router.post('/addblog', async function (req, res, next) {
+  var body = req.body;
+  var user = await userFacade.findById('5bc23b8d4fe27e113c5f6efa')
+  var result = await blogFacade.addLocationBlog(body.info, body.longtitude, body.latitude, user)
+  res.send("it's magic")
+})
 
 // Native endpoints
 
@@ -130,27 +172,7 @@ router.post('/api/nearbyplayers', async function (req, res, next) {
   res.send(JSON.stringify(removeUserFromList));
 })
 
-/* LOCATIONBLOGS */
-
-/* GET all LocationBlogs. */
-router.get('/locationblogs', async function (req, res, next) {
-  var result = await blogFacade.getAllLocationBlogs();
-  res.json(result);
-});
-
-/* GET specific user by username with params */
-router.get('/locationblogs/search/:locationinfo', async function (req, res, next) {
-  var result = await blogFacade.findLocationBlog(req.params.locationinfo)
-  res.json(result);
-});
-
-router.post('/addblog', async function (req, res, next) {
-  var body = req.body;
-  var user = await userFacade.findById('5bc23b8d4fe27e113c5f6efa')
-  var result = await blogFacade.addLocationBlog(body.info, body.longtitude, body.latitude, user)
-  res.send("it's magic")
-})
-
+//Get all friends upon login
 router.post('/api/allFriends', async function (req, res, next) {
   const body = req.body;
   const username = body.username;
@@ -163,44 +185,4 @@ router.post('/api/allFriends', async function (req, res, next) {
   next();
 })
 
-router.get('/api/getlocation', async function (req, res, next) {
-  const response = req.body // longtitude and latitude.
-  //Get all positions within 1 - 5 km
-  //Hardcoded
-  const min = 0;
-  const max = 5 * 10000000;
-  const longitude = 70.324;
-  const latitude = 40.765;
-  const getPositions = await posFacade.findPositionplaces(min, max, longitude, latitude);
-
-  // Map over and reformat
-  const newArray = getPositions.map(obj => {
-    return {
-      username: obj.user.userName,
-      longitude: obj.loc.coordinates[0],
-      latitude: obj.loc.coordinates[1]
-    }
-  })
-
-  const jsonObject = {
-    friends: newArray
-  };
-
-  console.log(jsonObject);
-  res.json(jsonObject);
-
-})
-
-router.post('/api/addPosition', async function (req, res, next) {
-  var body = req.body;
-  var pos = await posFacade.addPosition();
-  res.json(pos)
-})
-
-router.get('/addblog', function (req, res) {
-  res.render('blog', {
-    title: 'blog',
-    message: 'add blog'
-  })
-})
 module.exports = router;
