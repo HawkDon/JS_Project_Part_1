@@ -163,7 +163,7 @@ router.post('/api/allFriends', async function (req, res, next) {
   //First get positions.
   const getPositions = await posFacade.getAllFriends();
 
-  const friends = await helpers.removeUserFromFriendList(getPositions, username);
+  const friends = await helpers.removeUserFromFriendList(getPositions, username)
 
   res.send(JSON.stringify(friends));
   next();
