@@ -1,6 +1,6 @@
-import posFacade from '../facades/posFacade';
+var posFacade = require('../facades/posFacade');
 
-export default async function convertFriends(res, username) {
+async function convertFriends(res, username) {
     const allFriends = [];
     for (let index = 0; index < res.length; index++) {
       const user = await posFacade.findUserForPosition(res[index]._id);
@@ -9,4 +9,8 @@ export default async function convertFriends(res, username) {
       }
     }
     return allFriends;
+}
+
+module.exports = {
+  convertFriends: convertFriends
 }

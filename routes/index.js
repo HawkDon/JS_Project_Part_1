@@ -6,19 +6,11 @@ var posFacade = require('../facades/posFacade');
 var gju = require('geojson-utils');
 var circleToPolygon = require('circle-to-polygon');
 
+// Helper functions
+var helpers = require('../helper_functions/convertFriends');
+
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
-
-async function convertFriends(res, username) {
-  const allFriends = [];
-  for (let index = 0; index < res.length; index++) {
-    const user = await posFacade.findUserForPosition(res[index]._id);
-    if (user.userName !== username) {
-      allFriends.push({ position: res[index].loc.coordinates, user: user.userName });
-    }
-  }
-  return allFriends;
-}
 
 //Server-side rendering
 
@@ -36,12 +28,6 @@ router.get('/addblog', function (req, res) {
     title: 'blog',
     message: 'add blog'
   })
-})
-
-router.post('/api/addPosition', async function (req, res, next) {
-  var body = req.body;
-  var pos = await posFacade.addPosition();
-  res.json(pos)
 })
 
 // Server endpoints
@@ -98,8 +84,6 @@ router.post('/addblog', async function (req, res, next) {
 })
 
 // Native endpoints
-
-/* USER */
 
 // Register
 router.post('/api/register', async function (req, res, next) {
@@ -168,7 +152,7 @@ router.post('/api/nearbyplayers', async function (req, res, next) {
     }
   });
 
-  const removeUserFromList = await convertFriends(friendsInPolygon, username);
+  const removeUserFromList = await helpers.removeUserFromFriendList(friendsInPolygon, username);
   res.send(JSON.stringify(removeUserFromList));
 })
 
@@ -179,7 +163,7 @@ router.post('/api/allFriends', async function (req, res, next) {
   //First get positions.
   const getPositions = await posFacade.getAllFriends();
 
-  const friends = await convertFriends(getPositions, username);
+  const friends = await helpers.removeUserFromFriendList(getPositions, username);
 
   res.send(JSON.stringify(friends));
   next();
