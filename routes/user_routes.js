@@ -1,5 +1,5 @@
 
-export const registerEndPoint = async (req, res, next) => {
+export const registerEndPoint = async function (req, res, next) {
     var body = req.body;
     var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
     if (!result) {
