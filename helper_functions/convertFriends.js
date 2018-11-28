@@ -1,6 +1,6 @@
 var posFacade = require('../facades/posFacade');
 
-module.exports.removeUserFromFriendList = async function removeUserFromFriendList(res, username) {
+async function removeUserFromFriendList(res, username) {
   const allFriends = [];
   for (let index = 0; index < res.length; index++) {
     const user = await posFacade.findUserForPosition(res[index]._id);
@@ -10,3 +10,5 @@ module.exports.removeUserFromFriendList = async function removeUserFromFriendLis
   }
   return allFriends;
 }
+
+module.exports.removeUserFromFriendList = removeUserFromFriendList
