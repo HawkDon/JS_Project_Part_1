@@ -12,16 +12,14 @@ require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
 //index
 
-router.post('/api/register', async function (req, res, next) {
-  var body = req.body;
-  var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
-  if (!result) {
-    res.send(JSON.stringify({ status: "User has not been registered, because the username already exists.", error: true }))
-  } else {
-    res.send(JSON.stringify({ status: "User has been succesfully registered", error: false }))
-  }
-})
 
+/* USER */
+import { registerEndPoint } from './user_routes';
+
+// Register
+router.post('/api/register', registerEndPoint)
+
+// Login
 router.post('/api/login', async function (req, res, next) {
   const user = req.body.user;
   const coords = req.body;
@@ -56,7 +54,7 @@ router.post('/api/updatePos', async function (req, res, next) {
   res.send(JSON.stringify({ status: "Welcome: " + body.username, error: false, payload: { username: body.username, longitude: body.longitude, latitude: body.latitude } }))
 })
 
-/* USEr */
+/* USER */
 
 /* GET all users. */
 router.get('/users', async function (req, res, next) {
