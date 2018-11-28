@@ -1,19 +1,12 @@
 var express = require('express');
 var router = express.Router();
-var userFacade = require('../facades/userFacade');
-var blogFacade = require('../facades/blogFacade');
-var posFacade = require('../facades/posFacade');
-var gju = require('geojson-utils');
-var circleToPolygon = require('circle-to-polygon');
-
-// Helper functions
-var helpers = require('../helper_functions/convertFriends');
 
 /* Get connection */
 require('../dbSetup')(require("../settings").TEST_DB_URI);;
 
 //Get Route callbacks
 var client_routes = require('./client_routes');
+var server_routes = require('./server_routes');
 
 //Server-side rendering
 
@@ -35,56 +28,26 @@ router.get('/addblog', function (req, res) {
 
 // Server endpoints
 
+// Add new blog
+router.post('/addblog', server_routes.addBlog)
+
 /* GET all users. */
-router.get('/users', async function (req, res, next) {
-  var result = await userFacade.getAllUsers();
-  res.json(result);
-});
+router.get('/users', server_routes.getAllUsers);
 
 /* GET specific user by username with params */
-router.get('/users/search/:userName', async function (req, res, next) {
-  var result = await userFacade.findByUsername(req.params.userName);
-  res.json(result);
-});
+router.get('/users/search/:userName', server_routes.getUserByUsername);
 
 /* GET specific user by id or username with query else throw an error*/
-router.get('/users/search', async function (req, res, next) {
-  try {
-    var result;
-    if (req.query.uId) {
-      result = await userFacade.findById(req.query.uId);
-      res.json(result);
-    } else if (req.query.uName) {
-      result = await userFacade.findByUsername(req.query.uName);
-      res.json(result);
-    } else {
-      throw new Error('Something went wrong with your queries. Please try again');
-    }
-  } catch (error) {
-    next(error)
-  }
-});
+router.get('/users/search', server_routes.getUserByUsernameOrId);
 
 /* LOCATIONBLOGS */
 
 /* GET all LocationBlogs. */
-router.get('/locationblogs', async function (req, res, next) {
-  var result = await blogFacade.getAllLocationBlogs();
-  res.json(result);
-});
+router.get('/locationblogs', server_routes.getAllLocationBlogs);
 
-/* GET specific user by username with params */
-router.get('/locationblogs/search/:locationinfo', async function (req, res, next) {
-  var result = await blogFacade.findLocationBlog(req.params.locationinfo)
-  res.json(result);
-});
+/* GET Location by info */
+router.get('/locationblogs/search/:locationinfo', server_routes.getLocationByInfo);
 
-router.post('/addblog', async function (req, res, next) {
-  var body = req.body;
-  var user = await userFacade.findById('5bc23b8d4fe27e113c5f6efa')
-  var result = await blogFacade.addLocationBlog(body.info, body.longtitude, body.latitude, user)
-  res.send("it's magic")
-})
 
 // Native endpoints
 
