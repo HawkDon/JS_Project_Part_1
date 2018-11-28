@@ -1,6 +1,10 @@
 var userFacade = require('../facades/userFacade');
 var posFacade = require('../facades/posFacade');
 
+//Libraries needed
+var gju = require('geojson-utils');
+var circleToPolygon = require('circle-to-polygon');
+
 // Helper functions
 var helpers = require('../helper_functions/convertFriends');
 
