@@ -1,5 +1,6 @@
+var userFacade = require('../facades/userFacade');
 
-export const registerEndPoint = async function (req, res, next) {
+async function registerEndPoint(req, res, next) {
     var body = req.body;
     var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email)
     if (!result) {
@@ -7,4 +8,8 @@ export const registerEndPoint = async function (req, res, next) {
     } else {
       res.send(JSON.stringify({ status: "User has been succesfully registered", error: false }))
     }
+}
+
+module.exports = {
+  registerEndPoint: registerEndPoint
 }
