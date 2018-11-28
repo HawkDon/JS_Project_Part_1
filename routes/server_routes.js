@@ -45,11 +45,18 @@ async function getAllLocationBlogs(req, res, next) {
     res.json(result);
 }
 
+async function addUser(req, res, next) {
+    var body = req.body
+    var result = await userFacade.addUser(body.firstname, body.lastname, body.username, body.password, body.email);
+    res.send("Succes! you have been registered!")
+}
+
 module.exports = {
     addBlog: addBlog,
     getLocationByInfo: getLocationByInfo,
     getAllUsers: getAllUsers,
     getUserByUsername: getUserByUsername,
     getUserByUsernameOrId: getUserByUsernameOrId,
-    getAllLocationBlogs: getAllLocationBlogs
+    getAllLocationBlogs: getAllLocationBlogs,
+    addUser: addUser
 }

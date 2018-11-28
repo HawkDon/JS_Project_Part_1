@@ -28,6 +28,9 @@ router.get('/addblog', function (req, res) {
 
 // Server endpoints
 
+// Add new user
+router.post('/', server_routes.addUser)
+
 // Add new blog
 router.post('/addblog', server_routes.addBlog)
 
