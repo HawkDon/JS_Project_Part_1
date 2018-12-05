@@ -81,6 +81,8 @@ const resolvers = {
       return payload;
     },
     createLocationBlog: (root, { input }) => {
+      //Ids doesn't get tranformed correctly so we have to do vaiue of and convert them correctly
+      convertObjectId();
       const locationBlog = blogFacade.addLocationBlog(input.info, input.pos.longitude, input.pos.latitude, input.author);
       return locationBlog
     },

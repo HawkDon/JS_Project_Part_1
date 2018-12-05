@@ -73,22 +73,22 @@ const typeMutations = `
     }
 
     input LocationInput {
-        info: String
-        pos: CoordInput
-        author: ID
+        info: String!
+        pos: CoordInput!
+        author: ID!
     }
 
     input CoordInput {
-        longitude: Float
-        latitude: Float
+        longitude: Float!
+        latitude: Float!
     }
 
     input UserInput {
         userName: String!
         firstName: String
         lastName: String
-        password: String
-        email: String
+        password: String!
+        email: String!
         job: [JobInput]
     }
 
