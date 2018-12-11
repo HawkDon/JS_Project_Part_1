@@ -91,6 +91,7 @@ const resolvers = {
       return user;
     },
     deleteUser: (root, { id }) => {
+      convertObjectId();
       userFacade.deleteUser(id);
       return "User has been succesfully deleted";
     }
