@@ -38,6 +38,10 @@ function findPositionForUser(id) {
     return Position.findOne({ _id: id });
 }
 
+function findAllPositionForUser(id) {
+    return Position.find({ user: id});
+}
+
 
 module.exports = {
     findPositionplaces: findPositionplaces,
@@ -45,5 +49,6 @@ module.exports = {
     getAllFriends: getAllFriends,
     findUserForPosition: findUserForPosition,
     findAndUpdatePositionOnUsername: findAndUpdatePositionOnUsername,
-    findPositionForUser: findPositionForUser
+    findPositionForUser: findPositionForUser,
+    findAllPositionForUser: findAllPositionForUser
 }

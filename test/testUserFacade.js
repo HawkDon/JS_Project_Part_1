@@ -16,7 +16,7 @@ describe("Testing the User Facade", function () {
   /* Connect to the TEST-DATABASE */
   before(async function () {
     this.timeout(require("../settings").MOCHA_TEST_TIMEOUT);
-    await dbSetup(require("../settings").TEST_DB_URI);
+    await dbSetup(require("../settings").DEV_DB_URI);
   })
 
   after(function () {
@@ -40,7 +40,7 @@ describe("Testing the User Facade", function () {
 
   it("Should Find Kurt Wonnegut by Username", async function () {
     var user = await userFacade.findByUsername("kw");
-    expect(user.firstName).to.be.equal("Kurt");
+    expect(user[0].firstName).to.be.equal("Kurt");
   });
 
   it("Should Find Kurt Wonnegut by ID", async function () {
