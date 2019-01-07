@@ -30,12 +30,16 @@ function addUserGraphql(user) {
 }
 
 function updateUser(user) {
-  if (user.job) {
+  if (user.job.length) {
     const { job, ...rest } = user;
     return User.findOneAndUpdate({ _id: user.id }, { $push: { job: job }, ...rest }, { new: true });
   } else {
     return User.findOneAndUpdate({ _id: user.id }, { ...user }, { new: true });
   }
+}
+
+function updateUserTest(user) {
+    return User.findOneAndUpdate({ _id: user.id }, { firstName: user.firstName }, { new: true });
 }
 
 function deleteUser(id) {
@@ -49,5 +53,6 @@ module.exports = {
   findById: findById,
   addUserGraphql: addUserGraphql,
   updateUser: updateUser,
-  deleteUser: deleteUser
+  deleteUser: deleteUser,
+  updateUserTest: updateUserTest
 }
